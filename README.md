@@ -15,6 +15,3 @@ You should know how to do this
 
 #### Prepare a tarball for release on github
 ./release.bat
-
-#### Everything
-./all.bat 
