@@ -1,0 +1,1 @@
+copy bin\bad_dudes_among_us_radio_env.dll %APPDATA%\TS3Client\plugins

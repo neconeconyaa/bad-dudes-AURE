@@ -1,19 +1,20 @@
-# TeamSpeak 3 Client Plugin SDK
+# Bad Dudes Among Us Radio Environment Plugin
 
-This is the official helper repository that contains example code and the SDK header files 
-required to create native plugins for the TeamSpeak 3 Client.
+## Info 
+> implying
 
-## Getting Started
+## Build on an Actual OS
+You should know how to do this
 
-It's strongly recommended to build upon the test plugin. Plugins are required to export some 
-special functions, which already exist in the test plugin. Optional functions may be removed 
-if not used. See code comments for details.
+## Build on >Windows 
+#### Compile
+./build.bat
 
-For more information, please refer to the following pages:
+#### Install Build Artifacts to TS
+./install.bat
 
-- [TeamSpeak Community Forums](https://forum.teamspeak.com)
-- [TeamSpeak SDK Downloads](https://www.teamspeak.com/downloads#sdk)
+#### Prepare a tarball for release on github
+./release.bat
 
-## Copyright
-
-Copyright &copy; TeamSpeak Systems GmbH. All rights reserved.
+#### Everything
+./all.bat 
