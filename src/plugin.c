@@ -404,9 +404,9 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 	/* Register hotkeys giving a keyword and a description.
 	 * The keyword will be later passed to ts3plugin_onHotkeyEvent to identify which hotkey was triggered.
 	 * The description is shown in the clients hotkey dialog. */
-	BEGIN_CREATE_HOTKEYS(0);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
-	//CREATE_HOTKEY("keyword_1", "Test hotkey 1");
-	//CREATE_HOTKEY("keyword_2", "Test hotkey 2");
+	BEGIN_CREATE_HOTKEYS(2);  /* Create 3 hotkeys. Size must be correct for allocating memory. */
+	CREATE_HOTKEY("keyword_1", "TestMicMute");
+	CREATE_HOTKEY("keyword_2", "TestMicUnmute");
 	//CREATE_HOTKEY("keyword_3", "Test hotkey 3");
 	END_CREATE_HOTKEYS;
 
@@ -836,6 +836,12 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */
 void ts3plugin_onHotkeyEvent(const char* keyword) {
 	printf("PLUGIN: Hotkey event: %s\n", keyword);
+	// too lazy to safe string comparisions for a mod 
+	if(strcmp(keyword, "keyword_1")) {
+		bdplugin_enableMicrophone(0);
+	} else if (strcmp(keyword, "keyword_2")) {
+		bdplugin_enableMicrophone(1);
+	}
 	/* Identify the hotkey by keyword ("keyword_1", "keyword_2" or "keyword_3" in this example) and handle here... */
 }
 
@@ -917,4 +923,25 @@ void bdplugin_enableMicrophone(const unsigned int status) {
             ts3Functions.freeMemory(errorMsg);
         }
     }
+}
+
+/* 
+ * Returns MUTEINPUT_NONE if the local client's mic is unmuted
+ * Returns MUTEINPUT_MUTED if muted
+ * Returns NULL otherwise 
+ * err will only return an error from getClientVariableAsInt 
+ */
+unsigned int bdplugin_isLocalClientMicrophoneMuted(unsigned int *err) {
+	unsigned int res = 0u;
+	anyID clientId = NULL;
+	int micState = NULL;
+
+	res = ts3Functions.getClientID(ts3Functions.getCurrentServerConnectionHandlerID(), &clientId);
+	if (res == ERROR_ok) { 
+		res = ts3Functions.getClientVariableAsInt(ts3Functions.getCurrentServerConnectionHandlerID(),
+			clientId, CLIENT_INPUT_MUTED, &micState);
+		err = res;
+		return micState;
+	}
+	return NULL;
 }
