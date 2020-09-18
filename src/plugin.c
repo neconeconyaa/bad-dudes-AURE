@@ -835,15 +835,18 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */
 void ts3plugin_onHotkeyEvent(const char* keyword) {
-	printf("PLUGIN: Hotkey event: %s\n", keyword);
-
-	bdplugin_logInfo("HotKey Event")
-	
 	// too lazy to safe string comparisions for a mod 
 	if(strcmp(keyword, "keyword_1")) {
+		bdplugin_logInfo("keyword_1 true");
 		bdplugin_enableMicrophone(0);
 	} else if (strcmp(keyword, "keyword_2")) {
+		bdplugin_logInfo("keyword_2 true");
 		bdplugin_enableMicrophone(1);
+	} else {
+		char *debugmsg = (char*) malloc(256 * sizeof(char));
+		sprintf(debugmsg, "PLUGIN: Hotkey event: %s\n", keyword);
+		bdplugin_logInfo(debugmsg);
+		ts3Functions.freeMemory(debugmsg);
 	}
 	/* Identify the hotkey by keyword ("keyword_1", "keyword_2" or "keyword_3" in this example) and handle here... */
 }
@@ -948,7 +951,7 @@ unsigned int bdplugin_isLocalClientMicrophoneMuted() {
 }
 
 void bdplugin_log(const char* message, enum LogLevel logLevel) {
-	ts3Functions.logMessage("onHotKeyEvent", logLevel, 
+	ts3Functions.logMessage(message, logLevel, 
 		"Plugin", ts3Functions.getCurrentServerConnectionHandlerID());
 }
 
