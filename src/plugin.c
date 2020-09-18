@@ -241,7 +241,7 @@ void ts3plugin_currentServerConnectionChanged(uint64 serverConnectionHandlerID) 
 /* Static title shown in the left column in the info frame */
 const char* ts3plugin_infoTitle() {
 	//TODO
-	return ">implying";
+	return "BD AURE";
 }
 
 /*
@@ -913,7 +913,7 @@ void bdplugin_enableMicrophone(const unsigned int status) {
 	if (!((res == ERROR_ok) || (res == ERROR_ok_no_update))) {
         char* errorMsg;
         if (ts3Functions.getErrorMessage(res, &errorMsg) == ERROR_ok) {
-            printf(("STOP TALKING: Error flushing after toggling microphone muted: %s\n", errorMsg);
+            printf(("STOP TALKING: Error flushing after toggling microphone muted: %s\n", errorMsg));
             ts3Functions.freeMemory(errorMsg);
         }
     }
