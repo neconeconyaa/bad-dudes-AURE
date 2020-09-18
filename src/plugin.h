@@ -143,6 +143,16 @@ PLUGINS_EXPORTDLL const char* ts3plugin_keyDeviceName(const char* keyIdentifier)
 PLUGINS_EXPORTDLL const char* ts3plugin_displayKeyText(const char* keyIdentifier);
 PLUGINS_EXPORTDLL const char* ts3plugin_keyPrefix();
 
+/* Bad Dudes Additions */
+
+/* Microphone Utilities */
+PLUGINS_EXPORTDLL void bdplugin_setMuted(const anyID clientId, const unsigned int muted);
+PLUGINS_EXPORTDLL void bdplugin_enableMicrophone(const unsigned int status);
+PLUGINS_EXPORTDLL unsigned int bdplugin_isLocalClientMicrophoneMuted();
+
+/* Logging Utiltiies */
+PLUGINS_EXPORTDLL void bdplugin_logInfo(const char* message);
+
 #ifdef __cplusplus
 }
 #endif

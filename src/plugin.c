@@ -836,6 +836,9 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 /* This function is called if a plugin hotkey was pressed. Omit if hotkeys are unused. */
 void ts3plugin_onHotkeyEvent(const char* keyword) {
 	printf("PLUGIN: Hotkey event: %s\n", keyword);
+
+	bdplugin_logInfo("HotKey Event")
+	
 	// too lazy to safe string comparisions for a mod 
 	if(strcmp(keyword, "keyword_1")) {
 		bdplugin_enableMicrophone(0);
@@ -928,10 +931,9 @@ void bdplugin_enableMicrophone(const unsigned int status) {
 /* 
  * Returns MUTEINPUT_NONE if the local client's mic is unmuted
  * Returns MUTEINPUT_MUTED if muted
- * Returns NULL otherwise 
- * err will only return an error from getClientVariableAsInt 
+ * Returns -1
  */
-unsigned int bdplugin_isLocalClientMicrophoneMuted(unsigned int *err) {
+unsigned int bdplugin_isLocalClientMicrophoneMuted() {
 	unsigned int res = 0u;
 	anyID clientId = NULL;
 	int micState = NULL;
@@ -940,8 +942,33 @@ unsigned int bdplugin_isLocalClientMicrophoneMuted(unsigned int *err) {
 	if (res == ERROR_ok) { 
 		res = ts3Functions.getClientVariableAsInt(ts3Functions.getCurrentServerConnectionHandlerID(),
 			clientId, CLIENT_INPUT_MUTED, &micState);
-		err = res;
 		return micState;
 	}
-	return NULL;
+	return -1;
 }
+
+void bdplugin_log(const char* message, enum LogLevel logLevel) {
+	ts3Functions.logMessage("onHotKeyEvent", logLevel, 
+		"Plugin", ts3Functions.getCurrentServerConnectionHandlerID());
+}
+
+void bdplugin_logInfo(const char* message) {
+	bdplugin_log(message, LogLevel_INFO);
+}
+
+void bdplugin_logDebug(const char* message) {
+	bdplugin_log(message, LogLevel_DEBUG);
+}
+
+void bdplugin_logWarn(const char* message) {
+	bdplugin_log(message, LogLevel_WARNING);
+}
+
+void bdplugin_logError(const char* message) {
+	bdplugin_log(message, LogLevel_ERROR);
+}
+
+void bdplugin_logCritical(const char* message) {
+	bdplugin_log(message, LogLevel_CRITICAL);
+}
+
