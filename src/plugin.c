@@ -124,7 +124,14 @@ int ts3plugin_init() {
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 
 	printf("PLUGIN: App path: %s\nResources path: %s\nConfig path: %s\nPlugin path: %s\n", appPath, resourcesPath, configPath, pluginPath);
-	printf("PLUGIN: [Bad Dude Log]: Positional Audio Loaded.");
+	printf("PLUGIN: [Bad Dude Log]: Positional Audio Loaded.\n");
+
+	if (ts3Functions.getCurrentServerConnectionHandlerID()) {
+        // we are activating while connected, call it
+        // virtualize a connect event
+        ts3plugin_onConnectStatusChangeEvent(ts3Functions.getCurrentServerConnectionHandlerID(), STATUS_CONNECTION_ESTABLISHED, NULL);
+    }
+	
     return 0;  /* 0 = success, 1 = failure, -2 = failure but client will not show a "failed to load" warning */
 	/* -2 is a very special case and should only be used if a plugin displays a dialog (e.g. overlay) asking the user to disable
 	 * the plugin again, avoiding the show another dialog by the client telling the user the plugin failed to load.
@@ -134,7 +141,7 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
     /* Your plugin cleanup code here */
-	printf("PLUGIN: [Bad Dude Log]: Positional Audio Shutting Down.");
+	printf("PLUGIN: [Bad Dude Log]: Positional Audio Shutting Down.\n");
     printf("PLUGIN: shutdown\n");
 	
 	/*
@@ -360,7 +367,7 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 	 * If unused, set menuIcon to NULL
 	 */
 	*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
-	_strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, "t.png");
+	_strcpy(*menuIcon, PLUGIN_MENU_BUFSZ, "bd_logo.png");
 
 	/*
 	 * Menus can be enabled or disabled with: ts3Functions.setPluginMenuEnabled(pluginID, menuID, 0|1);
@@ -415,6 +422,9 @@ void ts3plugin_initHotkeys(struct PluginHotkey*** hotkeys) {
 /* Clientlib */
 
 void ts3plugin_onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber) {
+	if (newStatus == STATUS_CONNECTION_ESTABLISHED && errorNumber > 0) {
+		ts3Functions.requestChannelSubscribeAll(ts3Functions.getCurrentServerConnectionHandlerID(), NULL);
+	} 
 }
 
 void ts3plugin_onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID) {
@@ -852,4 +862,59 @@ const char* ts3plugin_keyPrefix() {
 
 /* Called when client custom nickname changed */
 void ts3plugin_onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier) {
+}
+
+// Bad Dudes Client Lib 
+/*
+ * Mute/Unmute a client	server side 
+ */
+void bdplugin_setMuted(const anyID clientId, const unsigned int muted) {
+	anyID clientArray[2];
+	clientArray[0] = clientId;
+	clientArray[1] = 0x0000;
+
+	if (muted) {
+		ts3Functions.requestMuteClients(ts3Functions.getCurrentServerConnectionHandlerID(), clientArray, NULL);
+	} else {
+		ts3Functions.requestUnmuteClients(ts3Functions.getCurrentServerConnectionHandlerID(), clientArray, NULL);
+	}
+}
+
+
+/*
+ * Mute/Unmute the local client's mic 
+ */
+void bdplugin_enableMicrophone(const unsigned int status) {
+	unsigned int res = 0u;
+	if (status) {
+		res = ts3Functions.setClientSelfVariableAsInt(ts3Functions.getCurrentServerConnectionHandlerID(),
+			CLIENT_INPUT_MUTED, MUTEINPUT_NONE);
+		if (res != ERROR_ok) {
+			char* errorMsg;
+			if (ts3Functions.getErrorMessage(res, &errorMsg) == ERROR_ok) {
+                printf("Error toggling microphone enabled: %s\n", errorMsg);
+                ts3Functions.freeMemory(errorMsg);
+            }
+		} 
+	}
+	else {
+		res = ts3Functions.setClientSelfVariableAsInt(ts3Functions.getCurrentServerConnectionHandlerID(),
+			CLIENT_INPUT_MUTED, MUTEINPUT_MUTED);
+		if (res != ERROR_ok) {
+            char* errorMsg;
+            if (ts3Functions.getErrorMessage(res, &errorMsg) == ERROR_ok) {
+                printf("Error, failed to disable microphone input: %s\n", errorMsg);
+                ts3Functions.freeMemory(errorMsg);
+            }
+        }
+	}
+
+	res = ts3Functions.flushClientSelfUpdates(ts3Functions.getCurrentServerConnectionHandlerID(), NULL);
+	if (!((res == ERROR_ok) || (res == ERROR_ok_no_update))) {
+        char* errorMsg;
+        if (ts3Functions.getErrorMessage(res, &errorMsg) == ERROR_ok) {
+            printf(("STOP TALKING: Error flushing after toggling microphone muted: %s\n", errorMsg);
+            ts3Functions.freeMemory(errorMsg);
+        }
+    }
 }
